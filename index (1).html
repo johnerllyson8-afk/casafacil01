@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#5756ee">
+  <title>CasaFácil — Controle financeiro</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fc;
+      --surface: #fff;
+      --surface2: #eef1fa;
+      --text: #192237;
+      --muted: #606d83;
+      --primary: #5958e9;
+      --primaryDark: #433dd0;
+      --line: #e2e6f0;
+      --positive: #107b57;
+      --negative: #c63851;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    #app { min-height: 100vh; background: var(--bg); padding: 28px 18px 55px; }
+    .wrap { max-width: 1100px; margin: auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo { background: linear-gradient(135deg, #5652e4, #8f8bff); color: white; width: 50px; height: 50px; border-radius: 15px; display: grid; place-items: center; font-size: 24px; font-weight: 900; }
+    h1 { margin: 0; font-size: 25px; letter-spacing: -.04em; }
+    header p { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+    .right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .input { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; min-width: 0; }
+    .input:focus { outline: 2px solid #7773ff77; outline-offset: 0; }
+    button { cursor: pointer; border: 0; border-radius: 11px; padding: 11px 14px; background: var(--primary); color: white; font: inherit; font-weight: 700; font-size: 13px; }
+    button:hover { filter: brightness(.96); }
+    button:focus-visible { outline: 3px solid #aaa8fc; outline-offset: 2px; }
+    .secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line); }
+    .danger { color: var(--negative); }
+    .hero { background: linear-gradient(120deg, #4a4add, #7775f7); color: white; padding: 27px; border-radius: 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+    .eyebrow { font-size: 12px; letter-spacing: .07em; opacity: .86; }
+    #salaryView { display: block; margin: 7px 0; font-size: clamp(29px, 4vw, 43px); letter-spacing: -.055em; }
+    .hero p { margin: 0 0 15px; font-size: 13px; color: #f0edff; }
+    .salaryRow { display: flex; gap: 8px; max-width: 480px; }
+    .salaryRow input { background: #ffffffef; color: #20243e; }
+    .salaryRow button { white-space: nowrap; background: white; color: #4d48cd; }
+    #status { margin: 14px 0; border: 1px solid #c7e9d9; background: #e9f8f0; color: #136c50; padding: 11px 14px; border-radius: 11px; font-size: 13px; }
+    #status.error { border-color: #ffc9d0; background: #fff0f2; color: #a32d44; }
+    #status:empty { display: none; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; margin-top: 17px; }
+    .card { border: 1px solid var(--line); background: var(--surface); border-radius: 18px; padding: 20px; box-shadow: 0 7px 21px #24335408; min-width: 0; }
+    .card h2 { margin: 0 0 15px; font-size: 17px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat { padding: 13px; background: var(--surface2); border-radius: 12px; }
+    .stat span { display: block; font-size: 11px; color: var(--muted); }
+    .stat b { font-size: 18px; display: block; margin-top: 5px; overflow-wrap: anywhere; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .row + .row { margin-top: 11px; }
+    .help { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .muted { color: var(--muted); }
+    .chart { display: flex; align-items: end; gap: 14px; min-height: 160px; padding: 12px; background: var(--surface2); border-radius: 12px; }
+    .chartItem { flex: 1; min-width: 0; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: end; gap: 7px; text-align: center; }
+    .chartItem .bar { width: 70%; max-width: 55px; min-height: 3px; border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #9695ff, #5354df); }
+    .chartItem b { font-size: 11px; overflow-wrap: anywhere; }
+    .chartItem span { color: var(--muted); font-size: 11px; }
+    #overAlert { margin-top: 17px; padding: 16px 19px; border: 1px solid #ffbec6; border-radius: 13px; background: #fff1f3; color: var(--negative); display: none; }
+    .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .expense { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .expense small { color: var(--muted); }
+    .expense b { overflow-wrap: anywhere; }
+    .empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
+    .tip { background: var(--surface2); padding: 13px; border-radius: 12px; font-size: 13px; line-height: 1.5; margin: 7px 0; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+    .progress { background: var(--surface2); height: 11px; border-radius: 20px; overflow: hidden; margin: 9px 0; }
+    .progress i { display: block; height: 100%; background: linear-gradient(90deg, #5654e7, #8f8bff); width: 0; }
+    .goal { border-bottom: 1px solid var(--line); padding: 13px 0; }
+    footer { margin-top: 23px; text-align: center; font-size: 12px; color: var(--muted); }
+    @media(max-width: 780px) {
+      #app { padding: 17px 12px 35px; }
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .stats { grid-template-columns: 1fr 1fr 1fr; }
+      .hero { padding: 21px 16px; }
+      .form { grid-template-columns: 1fr; }
+    }
+    @media(max-width: 430px) {
+      .salaryRow { flex-wrap: wrap; }
+      .salaryRow button { width: 100%; }
+      .stats { grid-template-columns: 1fr; }
+      .chart { gap: 7px; padding: 8px 3px; }
+      .chartItem b, .chartItem span { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"><div class="wrap">
+  <header>
+    <div class="brand"><div class="logo">C</div><div><h1>CasaFácil</h1><p>Organize suas finanças sem complicação · versão 4.0</p></div></div>
+    <div class="right"><input id="datePicker" class="input" type="date" aria-label="Data selecionada"><button class="secondary" id="todayBtn">Hoje</button></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">SALÁRIO DO MÊS</div>
+      <strong id="salaryView">R$ 0,00</strong>
+      <p id="message">Cadastre seu salário para começar.</p>
+      <div class="salaryRow">
+        <input id="salaryInput" class="input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Digite seu salário" aria-label="Salário do mês">
+        <button id="setSalary">Salvar salário</button>
+      </div>
+    </div>
+  </section>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <div class="grid">
+    <section class="card"><h2>Resumo do mês</h2><div class="stats">
+      <div class="stat"><span>Total gasto</span><b id="usedText">R$ 0</b></div>
+      <div class="stat"><span>Dinheiro livre</span><b id="leftText">R$ 0</b></div>
+      <div class="stat"><span>Salário</span><b id="salaryCard">R$ 0</b></div>
+    </div></section>
+    <section class="card"><h2>Resumo das despesas</h2><div class="row"><span>🏠 Casa</span><b id="homeText">R$ 0</b></div><div class="row"><span>🛒 Alimentação</span><b id="foodText">R$ 0</b></div><div class="row"><span>💳 Outras despesas</span><b id="otherText">R$ 0</b></div></section>
+  </div>
+
+  <section class="card" style="margin-top:17px"><h2>Gráfico do mês</h2>
+    <div class="chart">
+      <div class="chartItem"><div id="chartHome" class="bar"></div><b id="chartHomeV">R$ 0</b><span>Casa</span></div>
+      <div class="chartItem"><div id="chartFood" class="bar"></div><b id="chartFoodV">R$ 0</b><span>Alimentação</span></div>
+      <div class="chartItem"><div id="chartOther" class="bar"></div><b id="chartOtherV">R$ 0</b><span>Outros</span></div>
+      <div class="chartItem"><div id="chartFree" class="bar"></div><b id="chartFreeV">R$ 0</b><span>Livre</span></div>
+    </div>
+  </section>
+  <div id="overAlert" role="alert"><b>⚠️ Seus gastos ultrapassaram o salário!</b> <span id="overText"></span></div>
+
+  <div class="grid">
+    <section class="card"><div class="row"><h2>Despesas do dia</h2><button id="addBtn">+ Adicionar</button></div>
+      <div class="form"><input id="desc" class="input" placeholder="Ex.: aluguel, mercado"><input id="value" class="input" type="number" min="0" step="0.01" placeholder="Valor (R$)"></div>
+      <div id="expenses"></div>
+      <p class="help">As despesas entram no resumo do mês e ficam registradas na data escolhida.</p>
+    </section>
+    <section class="card"><h2>Salvar e organizar</h2>
+      <div class="tip">💾 O CasaFácil salva automaticamente neste navegador. O botão <b>Salvar dados</b> também confirma o registro.</div>
+      <div class="tip">📅 Troque o mês pelo calendário. Seus dados dos outros meses continuam lá.</div>
+      <div class="actions"><button id="saveBtn">💾 Salvar dados</button><button class="secondary" id="exportBtn">⬇ Baixar backup</button><button class="secondary" id="importBtn">⬆ Restaurar backup</button><input id="importFile" type="file" accept=".json,application/json" hidden></div>
+      <div class="actions"><button class="secondary" id="clearBtn">Limpar mês</button><button class="secondary danger" id="clearAllBtn">Apagar salários e despesas</button></div>
+      <p class="help">Limpar não apaga as metas de compra. O backup ajuda a recuperar dados se o navegador for limpo.</p>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card"><h2>🎯 Meta de compra</h2>
+      <div class="form"><input id="goalName" class="input" placeholder="O que quer comprar?"><input id="goalTarget" class="input" type="number" min="0" step="0.01" placeholder="Preço total (R$)"></div>
+      <div class="form"><input id="goalSaved" class="input" type="number" min="0" step="0.01" placeholder="Quanto já guardou?"><input id="goalMonthly" class="input" type="number" min="0" step="0.01" placeholder="Guardar por mês (R$)"></div>
+      <button id="goalBtn">Salvar meta</button><div id="goalView" style="margin-top:17px"></div><div id="savedGoals" style="margin-top:12px"></div>
+    </section>
+    <section class="card"><h2>🤖 Assistente do CasaFácil</h2>
+      <div class="tip" id="aiTip" aria-live="polite">Pergunte sobre os seus dados financeiros. As respostas são calculadas aqui mesmo, sem enviar seus valores para um servidor.</div>
+      <div class="form"><input class="input" id="aiInput" placeholder="Ex.: Quanto gastei este mês?"><button id="aiBtn">Perguntar</button></div>
+    </section>
+  </div>
+  <footer>CasaFácil 4.0 · Dados guardados no navegador deste dispositivo · Faça backups periodicamente</footer>
+</div></div>
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY = 'casafacil-v2'; // Mantido para preservar os registros de versões anteriores.
+  const DATE_KEY = 'casafacil-selected-date';
+  const $ = id => document.getElementById(id);
+  const fmt = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0);
+  const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+  const blank = () => ({ salary: 0, expenses: [] });
+  const defaultGoal = () => ({ name: '', target: 0, saved: 0, monthly: 0 });
+  const initialData = () => ({ months: {}, goal: defaultGoal(), goals: [] });
+  const localDate = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const validDate = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const monthKey = d => d.slice(0, 7);
+  const safeText = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  let storageOK = false;
+  try {
+    const testKey = 'casafacil-test-access';
+    localStorage.setItem(testKey, 'ok');
+    storageOK = localStorage.getItem(testKey) === 'ok';
+    localStorage.removeItem(testKey);
+  } catch (error) {
+    storageOK = false;
+  }
+  function showStatus(message, error = false) {
+    const status = $('status');
+    status.textContent = message;
+    status.classList.toggle('error', error);
+  }
+  let data = initialData();
+  let selectedDate = localDate();
+  if (storageOK) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (parsed && typeof parsed === 'object' && parsed.months && typeof parsed.months === 'object' && !Array.isArray(parsed.months)) {
+        data = parsed;
+      } else {
+        const old = JSON.parse(localStorage.getItem('casafacil-v1') || 'null');
+        if (old && typeof old === 'object') {
+          const mk = monthKey(localDate());
+          data.months[mk] = { salary: number(old.salary), expenses: Array.isArray(old.expenses) ? old.expenses.map(x => ({ ...x, date: validDate(x.date) ? x.date : localDate() })) : [] };
+          data.goal = old.goal || defaultGoal();
+        }
+      }
+      const restoredDate = localStorage.getItem(DATE_KEY);
+      if (validDate(restoredDate)) selectedDate = restoredDate;
+    } catch (error) {
+      showStatus('⚠️ Alguns dados salvos não puderam ser lidos. Baixe um backup antes de limpar dados do navegador.', true);
+    }
+  } else {
+    showStatus('⚠️ O navegador não permite armazenamento neste momento. Os dados NÃO continuarão após fechar/atualizar a página. Abra no Chrome normal e permita os dados de sites.', true);
+  }
+  if (!data.months || typeof data.months !== 'object') data.months = {};
+  if (!Array.isArray(data.goals)) data.goals = [];
+  if (!data.goal || typeof data.goal !== 'object') data.goal = defaultGoal();
+  if (data.goal.name && !data.goals.some(g => g.name === data.goal.name && number(g.target) === number(data.goal.target))) {
+    data.goals.push({ ...data.goal });
+  }
+  function month() {
+    const mk = monthKey(selectedDate);
+    if (!data.months[mk] || typeof data.months[mk] !== 'object') data.months[mk] = blank();
+    if (!Array.isArray(data.months[mk].expenses)) data.months[mk].expenses = [];
+    return data.months[mk];
+  }
+  function save(showConfirmation = false) {
+    if (!storageOK) {
+      showStatus('❌ Os dados NÃO foram salvos: este navegador bloqueou o armazenamento. Use a opção Baixar backup.', true);
+      return false;
+    }
+    try {
+      const encoded = JSON.stringify(data);
+      localStorage.setItem(STORAGE_KEY, encoded);
+      localStorage.setItem(DATE_KEY, selectedDate);
+      if (localStorage.getItem(STORAGE_KEY) !== encoded) throw new Error('Conferência do armazenamento falhou');
+      showStatus(showConfirmation ? '✅ Dados salvos e conferidos neste navegador. Pode atualizar a página para testar.' : '✅ Alterações salvas automaticamente neste navegador.');
+      return true;
+    } catch (error) {
+      showStatus('❌ Não foi possível salvar os dados. Verifique as permissões/armazenamento do Chrome e baixe um backup.', true);
+      return false;
+    }
+  }
+  function categories(expenses) {
+    const totals = { home: 0, food: 0, other: 0 };
+    expenses.forEach(item => {
+      const name = String(item.desc || '');
+      const amount = number(item.value);
+      if (/aluguel|casa|luz|água|energia|internet|condom[ií]nio/i.test(name)) totals.home += amount;
+      else if (/mercado|comida|aliment|restaurante|lanche|padaria/i.test(name)) totals.food += amount;
+      else totals.other += amount;
+    });
+    return totals;
+  }
+  function render() {
+    const current = month();
+    const salary = number(current.salary);
+    const total = current.expenses.reduce((sum, x) => sum + number(x.value), 0);
+    const free = salary - total;
+    const { home, food, other } = categories(current.expenses);
+    $('datePicker').value = selectedDate;
+    $('salaryInput').value = salary ? String(salary) : '';
+    $('salaryView').textContent = fmt(salary);
+    $('salaryCard').textContent = fmt(salary);
+    $('usedText').textContent = fmt(total);
+    $('leftText').textContent = fmt(free);
+    $('message').textContent = !salary ? 'Digite seu salário para começar.' : free >= 0 ? 'Você está dentro do orçamento.' : 'Atenção: despesas acima do salário.';
+    $('overAlert').style.display = salary > 0 && free < 0 ? 'block' : 'none';
+    $('overText').textContent = salary > 0 && free < 0 ? `Você passou do limite em ${fmt(-free)}.` : '';
+    $('homeText').textContent = fmt(home);
+    $('foodText').textContent = fmt(food);
+    $('otherText').textContent = fmt(other);
+    const maximum = Math.max(home, food, other, Math.max(free, 0), 1);
+    [['Home', home], ['Food', food], ['Other', other], ['Free', Math.max(free, 0)]].forEach(([name, value]) => {
+      $('chart' + name).style.height = (value ? Math.max(4, value / maximum * 88) : 3) + 'px';
+      $('chart' + name + 'V').textContent = fmt(value);
+    });
+    const todays = current.expenses.map((e, i) => ({ ...e, index: i })).filter(e => e.date === selectedDate || !e.date);
+    const list = $('expenses');
+    list.replaceChildren();
+    if (!todays.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'Nenhuma despesa nesta data.';
+      list.appendChild(empty);
+    } else {
+      todays.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'expense';
+        const label = document.createElement('div');
+        const title = document.createElement('b');
+        title.textContent = e.desc;
+        const date = document.createElement('small');
+        date.style.display = 'block';
+        date.textContent = e.date || selectedDate;
+        label.append(title, date);
+        const right = document.createElement('div');
+        right.className = 'row';
+        const amount = document.createElement('b');
+        amount.textContent = fmt(e.value);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'secondary';
+        remove.textContent = 'Excluir';
+        remove.setAttribute('aria-label', 'Excluir despesa ' + e.desc);
+        remove.addEventListener('click', () => {
+          current.expenses.splice(e.index, 1);
+          save();
+          render();
+        });
+        right.append(amount, remove);
+        div.append(label, right);
+        list.appendChild(div);
+      });
+    }
+    renderGoals();
+  }
+  function renderGoals() {
+    const g = data.goal;
+    $('goalName').value = g.name || '';
+    $('goalTarget').value = g.target || '';
+    $('goalSaved').value = g.saved || '';
+    $('goalMonthly').value = g.monthly || '';
+    const view = $('goalView');
+    const saved = $('savedGoals');
+    view.replaceChildren();
+    saved.replaceChildren();
+    if (g.name && number(g.target) > 0) {
+      const percent = Math.min(100, Math.round(number(g.saved) / number(g.target) * 100));
+      const title = document.createElement('b'); title.textContent = g.name;
+      const progress = document.createElement('div'); progress.className = 'progress';
+      const bar = document.createElement('i'); bar.style.width = percent + '%'; progress.appendChild(bar);
+      const detail = document.createElement('p'); detail.className = 'help'; detail.textContent = `${fmt(g.saved)} de ${fmt(g.target)} (${percent}%)`;
+      view.append(title, progress, detail);
+    } else {
+      view.textContent = 'Cadastre uma meta de compra para acompanhar.';
+      view.className = 'empty';
+    }
+    if (!data.goals.length) {
+      saved.className = 'empty'; saved.textContent = 'Nenhuma meta salva ainda.';
+    } else {
+      const heading = document.createElement('h3'); heading.style.fontSize = '14px'; heading.textContent = 'Metas salvas';
+      saved.appendChild(heading);
+      data.goals.forEach((goal, i) => {
+        const row = document.createElement('div'); row.className = 'goal';
+        const info = document.createElement('div'); info.className = 'row';
+        const name = document.createElement('b'); name.textContent = goal.name || 'Meta';
+        const open = document.createElement('button'); open.className = 'secondary'; open.textContent = 'Abrir';
+        open.addEventListener('click', () => { data.goal = { ...data.goals[i] }; save(); renderGoals(); });
+        info.append(name, open);
+        const detail = document.createElement('div'); detail.className = 'help'; detail.textContent = `${fmt(goal.saved)} / ${fmt(goal.target)}`;
+        row.append(info, detail); saved.appendChild(row);
+      });
+    }
+  }
+  function setSalary() {
+    const field = $('salaryInput');
+    const raw = field.value.trim();
+    if (raw === '' || !Number.isFinite(Number(raw)) || Number(raw) < 0) {
+      showStatus('Digite um salário válido (zero ou maior).', true);
+      return;
+    }
+    month().salary = Number(raw);
+    save(true);
+    render();
+  }
+  $('setSalary').addEventListener('click', setSalary);
+  // Registra ao alterar o valor também, para não depender de clicar em "Salvar salário".
+  $('salaryInput').addEventListener('input', () => {
+    const raw = $('salaryInput').value.trim();
+    if (raw !== '' && Number.isFinite(Number(raw)) && Number(raw) >= 0) {
+      month().salary = Number(raw);
+      // Salva sem redesenhar o campo enquanto a pessoa ainda está digitando.
+      save();
+    }
+  });
+  $('salaryInput').addEventListener('change', render);
+  $('salaryInput').addEventListener('keydown', e => { if (e.key === 'Enter') setSalary(); });
+  $('addBtn').addEventListener('click', () => {
+    const desc = $('desc').value.trim();
+    const value = Number($('value').value);
+    if (!desc || !Number.isFinite(value) || value <= 0) {
+      showStatus('Digite a descrição e um valor de despesa maior que zero.', true);
+      return;
+    }
+    month().expenses.push({ desc, value, date: selectedDate });
+    $('desc').value = '';
+    $('value').value = '';
+    save();
+    render();
+  });
+  function selectDate(newDate) {
+    selectedDate = validDate(newDate) ? newDate : localDate();
+    save();
+    render();
+  }
+  $('datePicker').addEventListener('change', () => selectDate($('datePicker').value));
+  $('todayBtn').addEventListener('click', () => selectDate(localDate()));
+  $('saveBtn').addEventListener('click', () => {
+    const typed = $('salaryInput').value.trim();
+    if (typed !== '' && Number.isFinite(Number(typed)) && Number(typed) >= 0) month().salary = Number(typed);
+    save(true);
+    render();
+  });
+  $('goalBtn').addEventListener('click', () => {
+    const name = $('goalName').value.trim();
+    const target = Number($('goalTarget').value);
+    const saved = Number($('goalSaved').value || 0);
+    const monthly = Number($('goalMonthly').value || 0);
+    if (!name || !Number.isFinite(target) || target <= 0 || !Number.isFinite(saved) || saved < 0 || !Number.isFinite(monthly) || monthly < 0) {
+      showStatus('Preencha o nome e um preço válido para a meta.', true);
+      return;
+    }
+    data.goal = { name, target, saved, monthly };
+    const index = data.goals.findIndex(g => g.name.toLowerCase() === name.toLowerCase());
+    if (index >= 0) data.goals[index] = { ...data.goal };
+    else data.goals.push({ ...data.goal });
+    save(true);
+    renderGoals();
+  });
+  $('clearBtn').addEventListener('click', () => {
+    if (!confirm('Limpar salário e despesas deste mês? Suas metas continuarão salvas.')) return;
+    data.months[monthKey(selectedDate)] = blank();
+    save(true);
+    render();
+  });
+  $('clearAllBtn').addEventListener('click', () => {
+    if (!confirm('Apagar salários e despesas de TODOS os meses? As metas serão mantidas. Antes disso, você pode baixar um backup.')) return;
+    data.months = {};
+    save(true);
+    render();
+  });
+  $('exportBtn').addEventListener('click', () => {
+    const payload = JSON.stringify({ app: 'CasaFacil', version: 4, data, selectedDate, exportedAt: new Date().toISOString() }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'CasaFacil-backup.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showStatus('✅ Backup baixado. Guarde o arquivo em local seguro.');
+  });
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', async e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (!parsed.data || !parsed.data.months || typeof parsed.data.months !== 'object' || !Array.isArray(parsed.data.goals)) throw new Error('arquivo incompatível');
+      if (!confirm('Restaurar backup? Isso substitui seus registros atuais.')) return;
+      const old = data;
+      const oldDate = selectedDate;
+      data = parsed.data;
+      data.goal ||= defaultGoal();
+      selectedDate = validDate(parsed.selectedDate) ? parsed.selectedDate : localDate();
+      if (!save(true)) { data = old; selectedDate = oldDate; return; }
+      render();
+    } catch (error) {
+      showStatus('❌ Não foi possível restaurar este backup. Verifique o arquivo JSON.', true);
+    } finally {
+      e.target.value = '';
+    }
+  });
+  $('aiBtn').addEventListener('click', () => {
+    const question = $('aiInput').value.trim().toLowerCase();
+    const current = month();
+    const salary = number(current.salary);
+    const total = current.expenses.reduce((sum, x) => sum + number(x.value), 0);
+    const left = salary - total;
+    let answer = 'Posso ajudar com salário, gastos, economia e metas.';
+    if (/sal[aá]rio|renda|ganho/.test(question)) answer = `Seu salário do mês é ${fmt(salary)}.`;
+    else if (/gasto|despesa|gastei|gastando/.test(question)) answer = `Você gastou ${fmt(total)} neste mês e tem ${fmt(left)} livres.`;
+    else if (/econom|poupar|guardar/.test(question)) answer = left > 0 ? `Você tem ${fmt(left)} livres. Considere separar parte para sua meta e emergências.` : 'Reveja os gastos deste mês antes de separar dinheiro para novas metas.';
+    else if (/meta|comprar|objetivo/.test(question)) answer = data.goal.name ? `Sua meta é ${data.goal.name}. Faltam ${fmt(Math.max(0, number(data.goal.target) - number(data.goal.saved)))}.` : 'Você ainda não cadastrou uma meta de compra.';
+    $('aiTip').textContent = answer;
+  });
+  $('aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('aiBtn').click(); });
+  render();
+  if (storageOK && !$('status').textContent) showStatus('✅ Armazenamento disponível. Pronto para salvar seus dados neste navegador.');
+})();
+</script>
+</body>
+</html>
